@@ -18,5 +18,5 @@ public class Post
     public int CommunityId { get; set; }
     public Community Community { get; set; } = null!;
 
-    public IEnumerable<Vote> Votes { get; set; } = null!;
+    public IEnumerable<Vote>? Votes { get; set; }
 }

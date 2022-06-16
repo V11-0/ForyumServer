@@ -12,7 +12,7 @@ public class Community
 
     public IEnumerable<Post>? Posts { get; set; }
 
-    public IEnumerable<User> Users { get; set; } = null!;
+    public IEnumerable<User>? Users { get; set; }
 
     public int CreatorUserId { get; set; }
     public User CreatorUser { get; set; } = null!;

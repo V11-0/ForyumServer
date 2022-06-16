@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Infrastructure.Migrations
 {
-    public partial class InitialCreation : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -19,12 +19,16 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    DateCreated = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false, defaultValue: new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 19, DateTimeKind.Unspecified).AddTicks(256), new TimeSpan(0, -3, 0, 0, 0))),
+                    DateCreated = table.Column<DateTimeOffset>(type: "DATETIME", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     Username = table.Column<string>(type: "varchar(60)", maxLength: 60, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Email = table.Column<string>(type: "longtext", nullable: false)
+                    Email = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Password = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Country = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Bio = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
@@ -39,7 +43,7 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    DateCreated = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false, defaultValue: new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 21, DateTimeKind.Unspecified).AddTicks(6037), new TimeSpan(0, -3, 0, 0, 0))),
+                    DateCreated = table.Column<DateTimeOffset>(type: "DATETIME", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     Name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Description = table.Column<string>(type: "longtext", nullable: true)
@@ -52,6 +56,33 @@ namespace Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Communities_Users_CreatorUserId",
                         column: x => x.CreatorUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "Sessions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    DateCreated = table.Column<DateTimeOffset>(type: "DATETIME", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    Token = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    DeviceName = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    DeviceOS = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Sessions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Sessions_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -89,7 +120,7 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    DateCreated = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false, defaultValue: new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 21, DateTimeKind.Unspecified).AddTicks(3558), new TimeSpan(0, -3, 0, 0, 0))),
+                    DateCreated = table.Column<DateTimeOffset>(type: "DATETIME", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     Title = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Text = table.Column<string>(type: "longtext", nullable: true)
@@ -121,7 +152,7 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    DateCreated = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false, defaultValue: new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 21, DateTimeKind.Unspecified).AddTicks(6922), new TimeSpan(0, -3, 0, 0, 0))),
+                    DateCreated = table.Column<DateTimeOffset>(type: "DATETIME", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     Type = table.Column<int>(type: "int", nullable: false),
                     Url = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -145,7 +176,7 @@ namespace Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    DateCreated = table.Column<DateTimeOffset>(type: "datetime(6)", nullable: false, defaultValue: new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 21, DateTimeKind.Unspecified).AddTicks(7288), new TimeSpan(0, -3, 0, 0, 0))),
+                    DateCreated = table.Column<DateTimeOffset>(type: "DATETIME", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     VoteType = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     PostId = table.Column<int>(type: "int", nullable: false)
@@ -174,6 +205,12 @@ namespace Infrastructure.Migrations
                 column: "CreatorUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Communities_Name",
+                table: "Communities",
+                column: "Name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CommunityUser_UsersId",
                 table: "CommunityUser",
                 column: "UsersId");
@@ -194,6 +231,23 @@ namespace Infrastructure.Migrations
                 column: "CreatorUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Sessions_UserId",
+                table: "Sessions",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Email",
+                table: "Users",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_Username",
+                table: "Users",
+                column: "Username",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Votes_PostId",
                 table: "Votes",
                 column: "PostId");
@@ -211,6 +265,9 @@ namespace Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "PostMedias");
+
+            migrationBuilder.DropTable(
+                name: "Sessions");
 
             migrationBuilder.DropTable(
                 name: "Votes");

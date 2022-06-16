@@ -30,8 +30,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("DateCreated")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 21, DateTimeKind.Unspecified).AddTicks(6037), new TimeSpan(0, -3, 0, 0, 0)));
+                        .HasColumnType("DATETIME")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
@@ -44,6 +44,9 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorUserId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Communities", (string)null);
                 });
@@ -62,8 +65,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("DateCreated")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 21, DateTimeKind.Unspecified).AddTicks(3558), new TimeSpan(0, -3, 0, 0, 0)));
+                        .HasColumnType("DATETIME")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Text")
                         .HasColumnType("longtext");
@@ -90,8 +93,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("DateCreated")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 21, DateTimeKind.Unspecified).AddTicks(6922), new TimeSpan(0, -3, 0, 0, 0)));
+                        .HasColumnType("DATETIME")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("PostId")
                         .HasColumnType("int");
@@ -110,7 +113,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("PostMedias", (string)null);
                 });
 
-            modelBuilder.Entity("ApplicationCore.Models.User", b =>
+            modelBuilder.Entity("ApplicationCore.Models.Session", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -118,12 +121,50 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("DateCreated")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 19, DateTimeKind.Unspecified).AddTicks(256), new TimeSpan(0, -3, 0, 0, 0)));
+                        .HasColumnType("DATETIME")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("DeviceName")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("DeviceOS")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Sessions", (string)null);
+                });
+
+            modelBuilder.Entity("ApplicationCore.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Bio")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("DATETIME")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -136,6 +177,12 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("Users", (string)null);
                 });
 
@@ -147,8 +194,8 @@ namespace Infrastructure.Migrations
 
                     b.Property<DateTimeOffset>("DateCreated")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime(6)")
-                        .HasDefaultValue(new DateTimeOffset(new DateTime(2022, 6, 6, 21, 31, 40, 21, DateTimeKind.Unspecified).AddTicks(7288), new TimeSpan(0, -3, 0, 0, 0)));
+                        .HasColumnType("DATETIME")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("PostId")
                         .HasColumnType("int");
@@ -224,6 +271,17 @@ namespace Infrastructure.Migrations
                     b.Navigation("Post");
                 });
 
+            modelBuilder.Entity("ApplicationCore.Models.Session", b =>
+                {
+                    b.HasOne("ApplicationCore.Models.User", "User")
+                        .WithMany("Sessions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ApplicationCore.Models.Vote", b =>
                 {
                     b.HasOne("ApplicationCore.Models.Post", "Post")
@@ -275,6 +333,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("CreatedCommunities");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("Sessions");
 
                     b.Navigation("Votes");
                 });

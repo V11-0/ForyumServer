@@ -21,7 +21,8 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<User>()
             .Property(u => u.DateCreated)
-            .HasDefaultValue(DateTimeOffset.Now);
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<User>()
             .Property(u => u.Username)
@@ -42,6 +43,19 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<User>()
             .HasMany(u => u.Votes)
             .WithOne(v => v.User);
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Sessions)
+            .WithOne(s => s.User);
+
+        // Set email and username as unique
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
         // ------------------------
 
         // Post Model Configuration
@@ -49,7 +63,8 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Post>()
             .Property(p => p.DateCreated)
-            .HasDefaultValue(DateTimeOffset.Now);
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<Post>()
             .Property(p => p.Title)
@@ -77,7 +92,8 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Community>()
             .Property(b => b.DateCreated)
-            .HasDefaultValue(DateTimeOffset.Now);
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         modelBuilder.Entity<Community>()
             .Property(c => c.Name)
@@ -94,17 +110,35 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Community>()
             .HasOne(c => c.CreatorUser)
             .WithMany(c => c.CreatedCommunities);
+
+        modelBuilder.Entity<Community>()
+            .HasIndex(c => c.Name)
+            .IsUnique();
         // -----------------------------
 
         // PostMedia Model Configuration
         modelBuilder.Entity<PostMedia>().ToTable("PostMedias");
-        modelBuilder.Entity<PostMedia>().Property(b => b.DateCreated).HasDefaultValue(DateTimeOffset.Now);
+        modelBuilder.Entity<PostMedia>().Property(b => b.DateCreated)
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
         // -----------------------------
 
         // Vote Model Configuration
         modelBuilder.Entity<Vote>().ToTable("Votes");
-        modelBuilder.Entity<Vote>().Property(b => b.DateCreated).HasDefaultValue(DateTimeOffset.Now);
+        modelBuilder.Entity<Vote>().Property(b => b.DateCreated)
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
         // -----------------------------
+
+        // Session Model Configuration
+        modelBuilder.Entity<Session>().ToTable("Sessions");
+        modelBuilder.Entity<Session>().Property(b => b.DateCreated)
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<Session>()
+            .HasOne(s => s.User)
+            .WithMany(u => u.Sessions);
     }
 
     public DbSet<User> Users => Set<User>();

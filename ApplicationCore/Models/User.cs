@@ -12,11 +12,17 @@ public class User
 
     public string Password { get; set; } = null!;
 
-    public IEnumerable<Post> Posts { get; set; } = null!;
+    public string Country { get; set; } = null!;
 
-    public IEnumerable<Community> Communities { get; set; } = null!;
+    public string? Bio { get; set; }
 
-    public IEnumerable<Community> CreatedCommunities { get; set; } = null!;
+    public IEnumerable<Post>? Posts { get; set; }
 
-    public IEnumerable<Vote> Votes { get; set; } = null!;
+    public IEnumerable<Community>? Communities { get; set; }
+
+    public IEnumerable<Community>? CreatedCommunities { get; set; }
+
+    public IEnumerable<Vote>? Votes { get; set; }
+
+    public IEnumerable<Session>? Sessions { get; set; }
 }
