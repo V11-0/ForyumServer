@@ -1,26 +1,33 @@
 using ApplicationCore.Models;
-using ApplicationCore.Utils;
+using ApplicationCore.Security;
+using ForyumAPI.Models.DTO;
 using ForyumAPI.Repositories.Base;
+using ForyumAPI.Security;
 using Infrastructure;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 
 namespace ForyumAPI.Repositories;
 
-public interface IUserRepository : IRepository<User> {
+public interface IUserRepository : IRepository<User>
+{
 
     Task<bool> CheckForUsername(string username);
     Task<bool> CheckForEmail(string email);
+    Task<Session?> Login(UserLoginDTO userLogin, string userAgent);
 }
 
 public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _context;
-    private readonly ISecurityUtils _securityUtils;
+    private readonly IPasswordHelper _passwordHelper;
+    private readonly IJWTHelper _jwtHelper;
 
-    public UserRepository(AppDbContext context, ISecurityUtils securityUtils) {
+    public UserRepository(AppDbContext context, IPasswordHelper passwordHelper, IJWTHelper jwtHelper)
+    {
         _context = context;
-        _securityUtils = securityUtils;
+        _passwordHelper = passwordHelper;
+        _jwtHelper = jwtHelper;
     }
 
     public async Task<bool> CheckForEmail(string email)
@@ -39,7 +46,8 @@ public class UserRepository : IUserRepository
     {
         var user = await GetById(id);
 
-        if (user != null) {
+        if (user != null)
+        {
             _context.Users.Remove(user);
         }
     }
@@ -51,7 +59,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User> Insert(User obj)
     {
-        obj = _securityUtils.HashPassword(obj);
+        obj = _passwordHelper.HashPassword(obj);
 
         await _context.Users.AddAsync(obj);
         await _context.SaveChangesAsync();
@@ -59,17 +67,56 @@ public class UserRepository : IUserRepository
         return obj;
     }
 
+    public async Task<Session?> Login(UserLoginDTO userLogin, string userAgent)
+    {
+        var passwordSalt = await _context.Users
+            .Where(u => u.Username == userLogin.Username)
+            .Select(u => u.PasswordSalt)
+            .SingleOrDefaultAsync();
+
+        if (passwordSalt == null) {
+            return null;
+        }
+
+        userLogin.Password = _passwordHelper
+            .HashPassword(userLogin.Password, Convert.FromBase64String(passwordSalt));
+
+        var user = await _context.Users
+            .Where(u => u.Username == userLogin.Username && u.Password == userLogin.Password)
+            .SingleOrDefaultAsync();
+
+        if (user == null) {
+            return null;
+        }
+
+        string token = _jwtHelper.GenerateJWT(user.Username, user.Email);
+
+        Session session = new Session() {
+            Token = token,
+            UserAgent = userAgent,
+            User = user
+        };
+
+        await _context.Sessions.AddAsync(session);
+        await _context.SaveChangesAsync();
+
+        return session;
+    }
+
     public async Task Update(User obj)
     {
         var dbUser = await GetById(obj.Id);
 
-        if (dbUser != null) {
+        if (dbUser != null)
+        {
             dbUser.Bio = obj.Bio;
             dbUser.Country = obj.Country;
             dbUser.Email = obj.Email;
 
             await _context.SaveChangesAsync();
-        } else {
+        }
+        else
+        {
             throw new ApplicationException("User to be updated does not exist");
         }
     }

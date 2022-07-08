@@ -9,30 +9,50 @@ namespace ForyumAPI.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserController : ControllerBase {
+public class UserController : ControllerBase
+{
 
     private readonly IUserRepository _repository;
 
-    public UserController(IUserRepository repository) {
+    public UserController(IUserRepository repository)
+    {
         _repository = repository;
     }
 
     [HttpPost]
+    [Route("Login")]
     [AllowAnonymous]
-    public async Task<ActionResult<User>> CreateUser(UserCreationDTO userCreationDTO) {
+    public async Task<ActionResult<Session>> Login(UserLoginDTO userLogin)
+    {
+        var userAgent = Request.Headers.UserAgent.ToString();
+        var session = await _repository.Login(userLogin, userAgent);
 
+        if (session == null) {
+            return Unauthorized();
+        }
+
+        return session;
+    }
+
+    [HttpPost]
+    [AllowAnonymous]
+    public async Task<ActionResult<User>> CreateUser(UserCreationDTO userCreationDTO)
+    {
         // Check for unique username and email
         var usernameExists = await _repository.CheckForUsername(userCreationDTO.Username);
         var emailExists = await _repository.CheckForEmail(userCreationDTO.Email);
 
-        if (usernameExists || emailExists) {
+        if (usernameExists || emailExists)
+        {
             var errors = new List<ValidationError>();
 
-            if (usernameExists) {
+            if (usernameExists)
+            {
                 errors.Add(new ValidationError("username", "O nome de usuário já existe"));
             }
 
-            if (emailExists) {
+            if (emailExists)
+            {
                 errors.Add(new ValidationError("email", "O email já existe"));
             }
 
@@ -46,11 +66,14 @@ public class UserController : ControllerBase {
     }
 
     [HttpGet]
+    [Authorize]
     [Route("{id}")]
-    public async Task<ActionResult<UserBasicDTO?>> GetUserById(int id) {
+    public async Task<ActionResult<UserBasicDTO?>> GetUserById(int id)
+    {
         var user = await _repository.GetById(id);
 
-        if (user != null) {
+        if (user != null)
+        {
             return UserBasicDTO.fromUser(user);
         }
 

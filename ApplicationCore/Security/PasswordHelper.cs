@@ -2,16 +2,16 @@ using ApplicationCore.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 
-namespace ApplicationCore.Utils;
+namespace ApplicationCore.Security;
 
-public interface ISecurityUtils {
+public interface IPasswordHelper {
 
     User HashPassword(User user);
 
-    User HashPassword(User user, byte[] salt);
+    string HashPassword(string password, byte[] salt);
 }
 
-public class SecurityUtils : ISecurityUtils
+public class PasswordHelper : IPasswordHelper
 {
     public User HashPassword(User user)
     {
@@ -20,13 +20,14 @@ public class SecurityUtils : ISecurityUtils
         var rng = RandomNumberGenerator.Create();
         rng.GetBytes(salt);
 
-        return HashPassword(user, salt);
+        user.Password = HashPassword(user.Password, salt);
+        user.PasswordSalt = Convert.ToBase64String(salt);
+
+        return user;
     }
 
-    public User HashPassword(User user, byte[] salt)
+    public string HashPassword(string password, byte[] salt)
     {
-        var password = user.Password;
-
         string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
             password: password,
             salt: salt,
@@ -34,9 +35,6 @@ public class SecurityUtils : ISecurityUtils
             iterationCount: 100000,
             numBytesRequested: 256 / 8));
 
-        user.Password = hashed;
-        user.PasswordSalt = Convert.ToBase64String(salt);
-
-        return user;
+        return hashed;
     }
 }
