@@ -12,6 +12,8 @@ public class User
 
     public string Password { get; set; } = null!;
 
+    public string PasswordSalt { get; set; } = null!;
+
     public string Country { get; set; } = null!;
 
     public string? Bio { get; set; }

@@ -1,5 +1,6 @@
 using ApplicationCore.Models;
 using ForyumAPI.Models;
+using ForyumAPI.Models.DTO;
 using ForyumAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,11 +19,11 @@ public class UserController : ControllerBase {
 
     [HttpPost]
     [AllowAnonymous]
-    public async Task<ActionResult<User>> CreateUser(User user) {
+    public async Task<ActionResult<User>> CreateUser(UserCreationDTO userCreationDTO) {
 
         // Check for unique username and email
-        var usernameExists = await _repository.CheckForUsername(user.Username);
-        var emailExists = await _repository.CheckForEmail(user.Email);
+        var usernameExists = await _repository.CheckForUsername(userCreationDTO.Username);
+        var emailExists = await _repository.CheckForEmail(userCreationDTO.Email);
 
         if (usernameExists || emailExists) {
             var errors = new List<ValidationError>();
@@ -38,17 +39,19 @@ public class UserController : ControllerBase {
             return Conflict(errors);
         }
 
+        var user = UserCreationDTO.toUser(userCreationDTO);
         var createdUser = await _repository.Insert(user);
-        return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, createdUser);
+
+        return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, UserBasicDTO.fromUser(user));
     }
 
     [HttpGet]
     [Route("{id}")]
-    public async Task<ActionResult<User?>> GetUserById(int id) {
+    public async Task<ActionResult<UserBasicDTO?>> GetUserById(int id) {
         var user = await _repository.GetById(id);
 
         if (user != null) {
-            return user;
+            return UserBasicDTO.fromUser(user);
         }
 
         return NotFound();

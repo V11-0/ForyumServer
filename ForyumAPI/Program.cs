@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using ApplicationCore.Utils;
 using ForyumAPI.Repositories;
 using Infrastructure;
 
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>();
+builder.Services.AddSingleton<ISecurityUtils, SecurityUtils>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddControllers()

@@ -1,6 +1,8 @@
 using ApplicationCore.Models;
+using ApplicationCore.Utils;
 using ForyumAPI.Repositories.Base;
 using Infrastructure;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 
 namespace ForyumAPI.Repositories;
@@ -14,9 +16,11 @@ public interface IUserRepository : IRepository<User> {
 public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _context;
+    private readonly ISecurityUtils _securityUtils;
 
-    public UserRepository(AppDbContext context) {
+    public UserRepository(AppDbContext context, ISecurityUtils securityUtils) {
         _context = context;
+        _securityUtils = securityUtils;
     }
 
     public async Task<bool> CheckForEmail(string email)
@@ -47,6 +51,8 @@ public class UserRepository : IUserRepository
 
     public async Task<User> Insert(User obj)
     {
+        obj = _securityUtils.HashPassword(obj);
+
         await _context.Users.AddAsync(obj);
         await _context.SaveChangesAsync();
 
