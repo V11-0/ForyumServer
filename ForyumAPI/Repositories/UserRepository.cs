@@ -16,6 +16,7 @@ public interface IUserRepository : IRepository<User>
     Task<bool> CheckForEmail(string email);
     Task<Session?> Login(UserLoginDTO userLogin, string userAgent);
     Task<User> GetUserByToken(string token);
+    Task Logout(string token);
 }
 
 public class UserRepository : IUserRepository
@@ -61,7 +62,7 @@ public class UserRepository : IUserRepository
     public async Task<User> GetUserByToken(string token)
     {
         string jti = _jwtHelper.GetJti(token);
-        return await _context.Sessions.Where(s => s.Jti == jti).Select(s => s.User).FirstAsync();
+        return await _context.Sessions.Where(s => s.Jti == jti).Select(s => s.User).SingleAsync();
     }
 
     public async Task<User> Insert(User obj)
@@ -109,6 +110,15 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
 
         return session;
+    }
+
+    public async Task Logout(string token)
+    {
+        string jti = _jwtHelper.GetJti(token);
+        Session session = await _context.Sessions.Where(s => s.Jti == jti).SingleAsync();
+
+        _context.Sessions.Remove(session);
+        await _context.SaveChangesAsync();
     }
 
     public async Task Update(User obj)

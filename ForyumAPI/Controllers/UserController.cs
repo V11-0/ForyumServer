@@ -12,7 +12,6 @@ namespace ForyumAPI.Controllers;
 [ApiController]
 public class UserController : ControllerBase
 {
-
     private readonly IUserRepository _repository;
 
     public UserController(IUserRepository repository)
@@ -33,6 +32,13 @@ public class UserController : ControllerBase
         }
 
         return session;
+    }
+
+    [HttpDelete]
+    [Route("Logout")]
+    public async Task Logout() {
+        string token = GetTokenFromHeader();
+        await _repository.Logout(token);
     }
 
     [HttpPost]
@@ -82,9 +88,14 @@ public class UserController : ControllerBase
 
     [HttpGet]
     public async Task<User> GetCurrentUser() {
+        string token = GetTokenFromHeader();
+        return await _repository.GetUserByToken(token);
+    }
+
+    private string GetTokenFromHeader() {
         string token = Request.Headers["Authorization"];
         token = token.Substring(7);
 
-        return await _repository.GetUserByToken(token);
+        return token;
     }
 }

@@ -17,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddSingleton<IPasswordHelper, PasswordHelper>();
 builder.Services.AddSingleton<IJWTHelper>(new JWTHelper(key, issuer));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<ICommunityRepository, CommunityRepository>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);

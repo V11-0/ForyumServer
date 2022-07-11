@@ -1,4 +1,3 @@
-using System.Reflection;
 using ApplicationCore.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,6 +5,10 @@ namespace Infrastructure;
 
 public class AppDbContext : DbContext
 {
+    public AppDbContext() {
+        this.ChangeTracker.LazyLoadingEnabled = false;
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         var connectionString = "server=172.17.0.4; uid=root; pwd=1234; database=Foryum";
