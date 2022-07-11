@@ -10,7 +10,7 @@ public class Post
 
     public string? Text { get; set; }
 
-    public IEnumerable<PostMedia>? Medias { get; set; }
+    public List<PostMedia>? Medias { get; set; }
 
     public int CreatorUserId { get; set; }
     public User CreatorUser { get; set; } = null!;
@@ -18,5 +18,5 @@ public class Post
     public int CommunityId { get; set; }
     public Community Community { get; set; } = null!;
 
-    public IEnumerable<Vote>? Votes { get; set; }
+    public List<Vote>? Votes { get; set; }
 }

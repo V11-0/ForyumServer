@@ -1,4 +1,5 @@
 using ApplicationCore.Models;
+using ForyumAPI.Controllers.Base;
 using ForyumAPI.Models;
 using ForyumAPI.Models.DTO;
 using ForyumAPI.Repositories;
@@ -10,7 +11,7 @@ namespace ForyumAPI.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class UserController : ControllerBase
+public class UserController : AppBaseController
 {
     private readonly IUserRepository _repository;
 
@@ -90,12 +91,5 @@ public class UserController : ControllerBase
     public async Task<User> GetCurrentUser() {
         string token = GetTokenFromHeader();
         return await _repository.GetUserByToken(token);
-    }
-
-    private string GetTokenFromHeader() {
-        string token = Request.Headers["Authorization"];
-        token = token.Substring(7);
-
-        return token;
     }
 }

@@ -1,30 +1,50 @@
 using ApplicationCore.Models;
 using ForyumAPI.Models.DTO;
+using ForyumAPI.Security;
 using Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace ForyumAPI.Repositories;
 
 public interface ICommunityRepository
 {
-    IEnumerable<CommunityBasicDTO> GetRecommended();
+    Task<IEnumerable<CommunityBasicDTO>> GetRecommended();
+    Task JoinCommunity(string token, int communityId);
 }
 
 public class CommunityRepository : ICommunityRepository
 {
     private readonly AppDbContext _context;
+    private readonly IUserRepository _userRepository;
 
-    public CommunityRepository(AppDbContext context) {
+    public CommunityRepository(AppDbContext context, IUserRepository userRepository) {
         _context = context;
+        _userRepository = userRepository;
     }
 
-    public IEnumerable<CommunityBasicDTO> GetRecommended()
+    public async Task<IEnumerable<CommunityBasicDTO>> GetRecommended()
     {
         Random rand = new Random();
         int toSkip = rand.Next(1, _context.Communities.Count());
 
-        return _context.Communities.Skip(toSkip)
+        return await _context.Communities.Skip(toSkip)
             .Select(c => new CommunityBasicDTO(c.Id, c.Name, c.Description, c.Users.Count()))
             .Take(10)
-            .ToList();
+            .ToListAsync();
+    }
+
+    public async Task JoinCommunity(string token, int communityId)
+    {
+        var user = await _userRepository.GetUserByToken(token);
+        var community = await _context.Communities.FindAsync(communityId);
+
+        if (user.Communities == null) {
+            user.Communities = new List<Community>();
+        }
+
+        if (community != null) {
+            user.Communities.Add(community);
+            await _context.SaveChangesAsync();
+        } else throw new ApplicationException("Community not found");
     }
 }

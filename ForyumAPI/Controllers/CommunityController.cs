@@ -1,4 +1,5 @@
 using ApplicationCore.Models;
+using ForyumAPI.Controllers.Base;
 using ForyumAPI.Models.DTO;
 using ForyumAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +10,7 @@ namespace ForyumAPI.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class CommunityController : ControllerBase
+public class CommunityController : AppBaseController
 {
     private readonly ICommunityRepository _repository;
 
@@ -19,7 +20,13 @@ public class CommunityController : ControllerBase
 
     [HttpGet]
     [Route("Recommended")]
-    public IEnumerable<CommunityBasicDTO> GetRecommended() {
-        return _repository.GetRecommended();
+    public async Task<IEnumerable<CommunityBasicDTO>> GetRecommended() {
+        return await _repository.GetRecommended();
+    }
+
+    [HttpPost]
+    [Route("Join/{communityId}")]
+    public async Task JoinCommunity(int communityId) {
+        await _repository.JoinCommunity(GetTokenFromHeader(), communityId);
     }
 }

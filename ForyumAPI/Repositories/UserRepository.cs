@@ -62,7 +62,11 @@ public class UserRepository : IUserRepository
     public async Task<User> GetUserByToken(string token)
     {
         string jti = _jwtHelper.GetJti(token);
-        return await _context.Sessions.Where(s => s.Jti == jti).Select(s => s.User).SingleAsync();
+        return await _context.Sessions
+            .Where(s => s.Jti == jti)
+            .Include(s => s.User.Communities)
+            .Select(s => s.User)
+            .SingleAsync();
     }
 
     public async Task<User> Insert(User obj)
@@ -82,7 +86,8 @@ public class UserRepository : IUserRepository
             .Select(u => u.PasswordSalt)
             .SingleOrDefaultAsync();
 
-        if (passwordSalt == null) {
+        if (passwordSalt == null)
+        {
             return null;
         }
 
@@ -93,13 +98,15 @@ public class UserRepository : IUserRepository
             .Where(u => u.Username == userLogin.Username && u.Password == userLogin.Password)
             .SingleOrDefaultAsync();
 
-        if (user == null) {
+        if (user == null)
+        {
             return null;
         }
 
         GeneratedJWT jwt = _jwtHelper.GenerateJWT(user.Username, user.Email);
 
-        Session session = new Session() {
+        Session session = new Session()
+        {
             Token = jwt.Token,
             Jti = jwt.Jti,
             UserAgent = userAgent,

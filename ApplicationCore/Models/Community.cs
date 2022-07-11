@@ -10,9 +10,9 @@ public class Community
 
     public string? Description { get; set; }
 
-    public IEnumerable<Post>? Posts { get; set; }
+    public List<Post>? Posts { get; set; }
 
-    public IEnumerable<User>? Users { get; set; }
+    public List<User>? Users { get; set; }
 
     public int CreatorUserId { get; set; }
     public User CreatorUser { get; set; } = null!;

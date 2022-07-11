@@ -18,13 +18,9 @@ public class User
 
     public string? Bio { get; set; }
 
-    public IEnumerable<Post>? Posts { get; set; }
-
-    public IEnumerable<Community>? Communities { get; set; }
-
-    public IEnumerable<Community>? CreatedCommunities { get; set; }
-
-    public IEnumerable<Vote>? Votes { get; set; }
-
-    public IEnumerable<Session>? Sessions { get; set; }
+    public List<Post>? Posts { get; set; }
+    public List<Community>? Communities { get; set; }
+    public List<Community>? CreatedCommunities { get; set; }
+    public List<Vote>? Votes { get; set; }
+    public List<Session>? Sessions { get; set; }
 }
