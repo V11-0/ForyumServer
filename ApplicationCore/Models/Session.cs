@@ -6,6 +6,8 @@ public class Session {
 
     public DateTimeOffset DateCreated { get; set; }
 
+    public string Jti { get; set; } = null!;
+
     public string Token { get; set; } = null!;
 
     public string? UserAgent { get; set; }

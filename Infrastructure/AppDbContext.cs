@@ -139,6 +139,9 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Session>()
             .HasOne(s => s.User)
             .WithMany(u => u.Sessions);
+
+        modelBuilder.Entity<Session>().Ignore(s => s.Token);
+
     }
 
     public DbSet<User> Users => Set<User>();

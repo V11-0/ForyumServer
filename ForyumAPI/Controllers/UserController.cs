@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ForyumAPI.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class UserController : ControllerBase
@@ -66,7 +67,6 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
     [Route("{id}")]
     public async Task<ActionResult<UserBasicDTO?>> GetUserById(int id)
     {
@@ -78,5 +78,13 @@ public class UserController : ControllerBase
         }
 
         return NotFound();
+    }
+
+    [HttpGet]
+    public async Task<User> GetCurrentUser() {
+        string token = Request.Headers["Authorization"];
+        token = token.Substring(7);
+
+        return await _repository.GetUserByToken(token);
     }
 }

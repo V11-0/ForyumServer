@@ -15,6 +15,7 @@ public interface IUserRepository : IRepository<User>
     Task<bool> CheckForUsername(string username);
     Task<bool> CheckForEmail(string email);
     Task<Session?> Login(UserLoginDTO userLogin, string userAgent);
+    Task<User> GetUserByToken(string token);
 }
 
 public class UserRepository : IUserRepository
@@ -57,6 +58,12 @@ public class UserRepository : IUserRepository
         return await _context.Users.FindAsync(id);
     }
 
+    public async Task<User> GetUserByToken(string token)
+    {
+        string jti = _jwtHelper.GetJti(token);
+        return await _context.Sessions.Where(s => s.Jti == jti).Select(s => s.User).FirstAsync();
+    }
+
     public async Task<User> Insert(User obj)
     {
         obj = _passwordHelper.HashPassword(obj);
@@ -89,12 +96,13 @@ public class UserRepository : IUserRepository
             return null;
         }
 
-        string token = _jwtHelper.GenerateJWT(user.Username, user.Email);
+        GeneratedJWT jwt = _jwtHelper.GenerateJWT(user.Username, user.Email);
 
         Session session = new Session() {
-            Token = token,
+            Token = jwt.Token,
+            Jti = jwt.Jti,
             UserAgent = userAgent,
-            User = user
+            UserId = user.Id
         };
 
         await _context.Sessions.AddAsync(session);
