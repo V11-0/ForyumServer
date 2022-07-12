@@ -1,12 +1,12 @@
 using ApplicationCore.Models;
 using ForyumAPI.Models.DTO;
-using ForyumAPI.Security;
+using ForyumAPI.Repositories.Base;
 using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace ForyumAPI.Repositories;
 
-public interface ICommunityRepository
+public interface ICommunityRepository : IRepository<Community>
 {
     Task<IEnumerable<CommunityBasicDTO>> GetRecommended();
     Task JoinCommunity(string token, int communityId);
@@ -22,6 +22,16 @@ public class CommunityRepository : ICommunityRepository
         _userRepository = userRepository;
     }
 
+    public Task Delete(int id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Community?> GetById(int id)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task<IEnumerable<CommunityBasicDTO>> GetRecommended()
     {
         Random rand = new Random();
@@ -31,6 +41,11 @@ public class CommunityRepository : ICommunityRepository
             .Select(c => new CommunityBasicDTO(c.Id, c.Name, c.Description, c.Users.Count()))
             .Take(10)
             .ToListAsync();
+    }
+
+    public Task<Community> Insert(Community obj)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task JoinCommunity(string token, int communityId)
@@ -46,5 +61,10 @@ public class CommunityRepository : ICommunityRepository
             user.Communities.Add(community);
             await _context.SaveChangesAsync();
         } else throw new ApplicationException("Community not found");
+    }
+
+    public Task Update(Community obj)
+    {
+        throw new NotImplementedException();
     }
 }

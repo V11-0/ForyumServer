@@ -150,4 +150,5 @@ public class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<Community> Communities => Set<Community>();
+    public DbSet<Post> Posts => Set<Post>();
 }
