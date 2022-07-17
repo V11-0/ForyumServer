@@ -19,3 +19,14 @@ public class PostCreationDTO
         };
     }
 }
+
+public class PostFeedDTO {
+    public int id { get; set; }
+    public DateTimeOffset dateCreated { get; set; }
+    public int communityId { get; set; }
+    public string communityName { get; set; } = null!;
+    public string title { get; set; } = null!;
+    public string? text { get; set; }
+    public int creatorUserId { get; set; }
+    public string creatorUsername { get; set; } = null!;
+}
