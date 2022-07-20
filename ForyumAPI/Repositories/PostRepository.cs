@@ -22,11 +22,6 @@ public class PostRepository : IPostRepository
         _context = context;
     }
 
-    public Task Delete(int id)
-    {
-        throw new NotImplementedException();
-    }
-
     public Task<Post?> GetById(int id)
     {
         throw new NotImplementedException();

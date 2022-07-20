@@ -151,4 +151,5 @@ public class AppDbContext : DbContext
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<Community> Communities => Set<Community>();
     public DbSet<Post> Posts => Set<Post>();
+    public DbSet<Vote> Votes => Set<Vote>();
 }

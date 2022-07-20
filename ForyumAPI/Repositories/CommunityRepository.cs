@@ -22,11 +22,6 @@ public class CommunityRepository : ICommunityRepository
         _userRepository = userRepository;
     }
 
-    public Task Delete(int id)
-    {
-        throw new NotImplementedException();
-    }
-
     public Task<Community?> GetById(int id)
     {
         throw new NotImplementedException();

@@ -44,16 +44,6 @@ public class UserRepository : IUserRepository
         return users.Any();
     }
 
-    public async Task Delete(int id)
-    {
-        var user = await GetById(id);
-
-        if (user != null)
-        {
-            _context.Users.Remove(user);
-        }
-    }
-
     public async Task<User?> GetById(int id)
     {
         return await _context.Users.FindAsync(id);
