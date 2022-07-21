@@ -19,7 +19,7 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // User Model Configuration
+        // User Model
         modelBuilder.Entity<User>().ToTable("Users");
 
         modelBuilder.Entity<User>()
@@ -31,6 +31,73 @@ public class AppDbContext : DbContext
             .Property(u => u.Username)
             .HasMaxLength(60);
 
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+        // -----------------------------
+
+        // Post Model Configuration
+        modelBuilder.Entity<Post>().ToTable("Posts");
+
+        modelBuilder.Entity<Post>()
+            .Property(p => p.DateCreated)
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<Post>()
+            .Property(p => p.Title)
+            .HasMaxLength(100);
+        // ---------------------------
+
+        // PostMedia Model Configuration
+        modelBuilder.Entity<PostMedia>().ToTable("PostMedias");
+        modelBuilder.Entity<PostMedia>().Property(b => b.DateCreated)
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        // -----------------------------
+
+        // Vote Model Configuration
+        modelBuilder.Entity<Vote>().ToTable("Votes");
+        modelBuilder.Entity<Vote>().Property(b => b.DateCreated)
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        // Define Unique for columns
+        modelBuilder.Entity<Vote>()
+            .HasIndex(v => new { v.UserId, v.PostId }).IsUnique();
+        // -----------------------------
+
+        // Session Model Configuration
+        modelBuilder.Entity<Session>().ToTable("Sessions");
+        modelBuilder.Entity<Session>().Property(b => b.DateCreated)
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<Session>()
+            .HasOne(s => s.User)
+            .WithMany(u => u.Sessions);
+
+        modelBuilder.Entity<Session>().Ignore(s => s.Token);
+        // -------------------------------
+
+        // Community Model Configuration
+        modelBuilder.Entity<Community>().ToTable("Communities");
+
+        modelBuilder.Entity<Community>()
+            .Property(b => b.DateCreated)
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<Community>()
+            .Property(c => c.Name)
+            .HasMaxLength(100);
+        // ----------------------
+
+        // Relations Configuration ----------------------
         modelBuilder.Entity<User>()
             .HasMany(u => u.Posts)
             .WithOne(p => p.CreatorUser);
@@ -50,28 +117,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<User>()
             .HasMany(u => u.Sessions)
             .WithOne(s => s.User);
-
-        // Set email and username as unique
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Email)
-            .IsUnique();
-
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Username)
-            .IsUnique();
         // ------------------------
-
-        // Post Model Configuration
-        modelBuilder.Entity<Post>().ToTable("Posts");
-
-        modelBuilder.Entity<Post>()
-            .Property(p => p.DateCreated)
-            .HasColumnType("DATETIME")
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-        modelBuilder.Entity<Post>()
-            .Property(p => p.Title)
-            .HasMaxLength(100);
 
         modelBuilder.Entity<Post>()
             .HasMany(p => p.Medias)
@@ -90,18 +136,6 @@ public class AppDbContext : DbContext
             .WithOne(v => v.Post);
         // ------------------------
 
-        // Community Model Configuration
-        modelBuilder.Entity<Community>().ToTable("Communities");
-
-        modelBuilder.Entity<Community>()
-            .Property(b => b.DateCreated)
-            .HasColumnType("DATETIME")
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-        modelBuilder.Entity<Community>()
-            .Property(c => c.Name)
-            .HasMaxLength(100);
-
         modelBuilder.Entity<Community>()
             .HasMany(c => c.Posts)
             .WithOne(p => p.Community);
@@ -117,34 +151,6 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Community>()
             .HasIndex(c => c.Name)
             .IsUnique();
-        // -----------------------------
-
-        // PostMedia Model Configuration
-        modelBuilder.Entity<PostMedia>().ToTable("PostMedias");
-        modelBuilder.Entity<PostMedia>().Property(b => b.DateCreated)
-            .HasColumnType("DATETIME")
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
-        // -----------------------------
-
-        // Vote Model Configuration
-        modelBuilder.Entity<Vote>().ToTable("Votes");
-        modelBuilder.Entity<Vote>().Property(b => b.DateCreated)
-            .HasColumnType("DATETIME")
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
-        // -----------------------------
-
-        // Session Model Configuration
-        modelBuilder.Entity<Session>().ToTable("Sessions");
-        modelBuilder.Entity<Session>().Property(b => b.DateCreated)
-            .HasColumnType("DATETIME")
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-        modelBuilder.Entity<Session>()
-            .HasOne(s => s.User)
-            .WithMany(u => u.Sessions);
-
-        modelBuilder.Entity<Session>().Ignore(s => s.Token);
-
     }
 
     public DbSet<User> Users => Set<User>();

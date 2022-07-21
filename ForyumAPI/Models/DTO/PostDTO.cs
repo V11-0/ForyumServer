@@ -29,4 +29,7 @@ public class PostFeedDTO {
     public string? text { get; set; }
     public int creatorUserId { get; set; }
     public string creatorUsername { get; set; } = null!;
+    public int upvoteCount { get; set; }
+    public int downvoteCount { get; set; }
+    public VoteType? userVote { get; set; }
 }

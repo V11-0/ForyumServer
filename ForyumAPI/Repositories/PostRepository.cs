@@ -33,15 +33,22 @@ public class PostRepository : IPostRepository
         var connection = _context.Database.GetDbConnection();
 
         var command = new CommandDefinition(
-            @"SELECT p.Id, p.DateCreated, p.CommunityId, c.Name 'communityName'
-            , p.Title, p.`Text`, p.CreatorUserId, u.Username 'creatorUsername'
+            @"SELECT p.Id, p.DateCreated, p.CommunityId, c.Name 'communityName', p.Title, p.`Text`,
+                p.CreatorUserId, u.Username 'creatorUsername',
+                SUM(CASE WHEN v.VoteType = 0 THEN 1 ELSE 0 END) 'upvoteCount',
+                SUM(CASE WHEN v.VoteType = 1 THEN 1 ELSE 0 END) 'downvoteCount',
+                (SELECT VoteType FROM Votes v WHERE PostId = p.Id AND UserId = @userId) 'userVote'
             FROM Posts p
 
             JOIN Communities c ON c.Id = p.CommunityId
             JOIN Users u ON u.Id = p.CreatorUserId
+            LEFT JOIN Votes v ON v.PostId = p.Id
 
             WHERE CommunityId IN (SELECT CommunitiesId FROM CommunityUser WHERE UsersId = @userId)
-            ORDER BY p.DateCreated DESC LIMIT 100",
+
+            GROUP BY p.Id
+            ORDER BY p.DateCreated DESC
+            LIMIT 100",
             new { userId }
         );
 
