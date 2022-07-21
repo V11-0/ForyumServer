@@ -1,4 +1,6 @@
 using ApplicationCore.Models;
+using Dapper;
+using ForyumAPI.Models;
 using ForyumAPI.Models.DTO;
 using ForyumAPI.Repositories.Base;
 using Infrastructure;
@@ -9,7 +11,9 @@ namespace ForyumAPI.Repositories;
 public interface ICommunityRepository : IRepository<Community>
 {
     Task<IEnumerable<CommunityBasicDTO>> GetRecommended();
+    Task<CommunityBasicDTO?> GetBasicCommunityInfo(int id);
     Task JoinCommunity(string token, int communityId);
+    Task<IEnumerable<PostFeedDTO>> GetPosts(int communityId, PostOrdenation orderBy, string token);
 }
 
 public class CommunityRepository : ICommunityRepository
@@ -22,9 +26,47 @@ public class CommunityRepository : ICommunityRepository
         _userRepository = userRepository;
     }
 
-    public Task<Community?> GetById(int id)
+    public async Task<CommunityBasicDTO?> GetBasicCommunityInfo(int id)
     {
-        throw new NotImplementedException();
+        return await _context.Communities
+            .Where(c => c.Id == id)
+            .Select(c => new CommunityBasicDTO(c.Id, c.Name, c.Description, c.Users.Count(), c.CreatorUserId, c.CreatorUser.Username))
+            .SingleOrDefaultAsync();
+    }
+
+    public async Task<Community?> GetById(int id)
+    {
+        return await _context.Communities.Where(c => c.Id == id).Include(c => c.Posts).SingleOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<PostFeedDTO>> GetPosts(int communityId, PostOrdenation orderBy, string token)
+    {
+        var user = await _userRepository.GetUserByToken(token);
+        var userId = user.Id;
+
+        var connection = _context.Database.GetDbConnection();
+
+        var command = new CommandDefinition(
+            @"SELECT p.Id, p.DateCreated, p.CommunityId, p.Title, p.`Text`,
+                p.CreatorUserId, u.Username 'creatorUsername',
+                SUM(CASE WHEN v.VoteType = 0 THEN 1 ELSE 0 END) 'upvoteCount',
+                SUM(CASE WHEN v.VoteType = 1 THEN 1 ELSE 0 END) 'downvoteCount',
+                (SELECT VoteType FROM Votes v WHERE PostId = p.Id AND UserId = @userId) 'userVote'
+            FROM Posts p
+
+            JOIN Communities c ON c.Id = p.CommunityId
+            JOIN Users u ON u.Id = p.CreatorUserId
+            LEFT JOIN Votes v ON v.PostId = p.Id
+
+            WHERE CommunityId = @communityId
+
+            GROUP BY p.Id
+            ORDER BY p.DateCreated DESC
+            LIMIT 100",
+            new { communityId, userId }
+        );
+
+        return await connection.QueryAsync<PostFeedDTO>(command);
     }
 
     public async Task<IEnumerable<CommunityBasicDTO>> GetRecommended()
@@ -33,7 +75,7 @@ public class CommunityRepository : ICommunityRepository
         int toSkip = rand.Next(1, _context.Communities.Count());
 
         return await _context.Communities.Skip(toSkip)
-            .Select(c => new CommunityBasicDTO(c.Id, c.Name, c.Description, c.Users.Count()))
+            .Select(c => new CommunityBasicDTO(c.Id, c.Name, c.Description, c.Users.Count(), null, null))
             .Take(10)
             .ToListAsync();
     }
