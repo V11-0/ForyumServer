@@ -1,4 +1,3 @@
-using ApplicationCore.Models;
 using ForyumAPI.Controllers.Base;
 using ForyumAPI.Models;
 using ForyumAPI.Models.DTO;
