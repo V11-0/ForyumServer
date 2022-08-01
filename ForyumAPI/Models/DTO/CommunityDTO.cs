@@ -1,5 +1,3 @@
-using ApplicationCore.Models;
-
 namespace ForyumAPI.Models.DTO;
 
 public class CommunityBasicDTO
@@ -10,8 +8,9 @@ public class CommunityBasicDTO
     public int? creatorUserId { get; set; }
     public string? creatorUsername { get; set; }
     public int? userCount { get; set; }
+    public IEnumerable<PostFeedDTO>? posts { get; set; }
 
-    public CommunityBasicDTO(int id, string name, string? description, int? userCount, int? creatorUserId = null, string? creatorUsername = null)
+    public CommunityBasicDTO(int id, string name, string? description, int? userCount, int? creatorUserId = null, string? creatorUsername = null, IEnumerable<PostFeedDTO>? posts = null)
     {
         this.id = id;
         this.name = name;
@@ -19,5 +18,6 @@ public class CommunityBasicDTO
         this.userCount = userCount;
         this.creatorUserId = creatorUserId;
         this.creatorUsername = creatorUsername;
+        this.posts = posts;
     }
 }

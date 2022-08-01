@@ -12,11 +12,9 @@ namespace ForyumAPI.Controllers;
 public class VoteController : AppBaseController {
 
     private readonly IVoteRepository _repository;
-    private readonly IUserRepository _userRepository;
 
-    public VoteController(IVoteRepository repository, IUserRepository userRepository) {
+    public VoteController(IVoteRepository repository, IUserRepository userRepository): base(userRepository) {
         _repository = repository;
-        _userRepository = userRepository;
     }
 
     [HttpPost]

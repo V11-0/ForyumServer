@@ -1,5 +1,4 @@
 using ForyumAPI.Controllers.Base;
-using ForyumAPI.Models;
 using ForyumAPI.Models.DTO;
 using ForyumAPI.Repositories;
 using Microsoft.AspNetCore.Authorization;
@@ -14,7 +13,7 @@ public class CommunityController : AppBaseController
 {
     private readonly ICommunityRepository _repository;
 
-    public CommunityController(ICommunityRepository repository) {
+    public CommunityController(ICommunityRepository repository, IUserRepository userRepository): base(userRepository) {
         _repository = repository;
     }
 
@@ -33,12 +32,7 @@ public class CommunityController : AppBaseController
     [HttpGet]
     [Route("{id}")]
     public async Task<CommunityBasicDTO?> GetCommunity(int id) {
-        return await _repository.GetBasicCommunityInfo(id);
-    }
-
-    [HttpGet]
-    [Route("{id}/Post")]
-    public async Task<IEnumerable<PostFeedDTO>> GetPostsFromCommunity(int id, PostOrdenation orderBy) {
-        return await _repository.GetPosts(id, orderBy, GetTokenFromHeader());
+        var userId = await GetUserIdFromToken();
+        return await _repository.GetCommunity(id, userId);
     }
 }

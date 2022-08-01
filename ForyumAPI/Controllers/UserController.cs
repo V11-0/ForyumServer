@@ -13,11 +13,8 @@ namespace ForyumAPI.Controllers;
 [ApiController]
 public class UserController : AppBaseController
 {
-    private readonly IUserRepository _repository;
-
-    public UserController(IUserRepository repository)
+    public UserController(IUserRepository repository): base(repository)
     {
-        _repository = repository;
     }
 
     [HttpPost]
@@ -26,7 +23,7 @@ public class UserController : AppBaseController
     public async Task<ActionResult<Session>> Login(UserLoginDTO userLogin)
     {
         var userAgent = Request.Headers.UserAgent.ToString();
-        var session = await _repository.Login(userLogin, userAgent);
+        var session = await _userRepository.Login(userLogin, userAgent);
 
         if (session == null) {
             return Unauthorized();
@@ -39,7 +36,7 @@ public class UserController : AppBaseController
     [Route("Logout")]
     public async Task Logout() {
         string token = GetTokenFromHeader();
-        await _repository.Logout(token);
+        await _userRepository.Logout(token);
     }
 
     [HttpPost]
@@ -47,8 +44,8 @@ public class UserController : AppBaseController
     public async Task<ActionResult<User>> CreateUser(UserCreationDTO userCreationDTO)
     {
         // Check for unique username and email
-        var usernameExists = await _repository.CheckForUsername(userCreationDTO.Username);
-        var emailExists = await _repository.CheckForEmail(userCreationDTO.Email);
+        var usernameExists = await _userRepository.CheckForUsername(userCreationDTO.Username);
+        var emailExists = await _userRepository.CheckForEmail(userCreationDTO.Email);
 
         if (usernameExists || emailExists)
         {
@@ -68,7 +65,7 @@ public class UserController : AppBaseController
         }
 
         var user = UserCreationDTO.toUser(userCreationDTO);
-        var createdUser = await _repository.Insert(user);
+        var createdUser = await _userRepository.Insert(user);
 
         return CreatedAtAction(nameof(GetUserById), new { id = createdUser.Id }, UserBasicDTO.fromUser(user));
     }
@@ -77,7 +74,7 @@ public class UserController : AppBaseController
     [Route("{id}")]
     public async Task<ActionResult<UserBasicDTO?>> GetUserById(int id)
     {
-        var user = await _repository.GetById(id);
+        var user = await _userRepository.GetById(id);
 
         if (user != null)
         {
@@ -90,6 +87,6 @@ public class UserController : AppBaseController
     [HttpGet]
     public async Task<User> GetCurrentUser() {
         string token = GetTokenFromHeader();
-        return await _repository.GetUserByToken(token);
+        return await _userRepository.GetUserByToken(token);
     }
 }

@@ -1,5 +1,4 @@
 using ApplicationCore.Models;
-using Dapper;
 using ForyumAPI.Models;
 using ForyumAPI.Models.DTO;
 using ForyumAPI.Repositories.Base;
@@ -11,27 +10,36 @@ namespace ForyumAPI.Repositories;
 public interface ICommunityRepository : IRepository<Community>
 {
     Task<IEnumerable<CommunityBasicDTO>> GetRecommended();
-    Task<CommunityBasicDTO?> GetBasicCommunityInfo(int id);
+    Task<CommunityBasicDTO?> GetCommunity(int id, int userId);
     Task JoinCommunity(string token, int communityId);
-    Task<IEnumerable<PostFeedDTO>> GetPosts(int communityId, PostOrdenation orderBy, string token);
+    Task<IEnumerable<PostFeedDTO>> GetPosts(int communityId, PostOrdenation orderBy, int userId);
 }
 
 public class CommunityRepository : ICommunityRepository
 {
     private readonly AppDbContext _context;
     private readonly IUserRepository _userRepository;
+    private readonly IPostRepository _postRepository;
 
-    public CommunityRepository(AppDbContext context, IUserRepository userRepository) {
+    public CommunityRepository(AppDbContext context, IUserRepository userRepository, IPostRepository postRepository) {
         _context = context;
         _userRepository = userRepository;
+        _postRepository = postRepository;
     }
 
-    public async Task<CommunityBasicDTO?> GetBasicCommunityInfo(int id)
+    public async Task<CommunityBasicDTO?> GetCommunity(int id, int userId)
     {
-        return await _context.Communities
+        var community = await _context.Communities
             .Where(c => c.Id == id)
-            .Select(c => new CommunityBasicDTO(c.Id, c.Name, c.Description, c.Users.Count(), c.CreatorUserId, c.CreatorUser.Username))
+            .Select(c => new CommunityBasicDTO(c.Id, c.Name, c.Description, c.Users.Count(), c.CreatorUserId, c.CreatorUser.Username, null))
             .SingleOrDefaultAsync();
+
+        if (community == null) {
+            return null;
+        }
+
+        community.posts = await GetPosts(id, PostOrdenation.New, userId);
+        return community;
     }
 
     public async Task<Community?> GetById(int id)
@@ -39,34 +47,12 @@ public class CommunityRepository : ICommunityRepository
         return await _context.Communities.Where(c => c.Id == id).Include(c => c.Posts).SingleOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<PostFeedDTO>> GetPosts(int communityId, PostOrdenation orderBy, string token)
+    public async Task<IEnumerable<PostFeedDTO>> GetPosts(int communityId, PostOrdenation orderBy, int userId)
     {
-        var user = await _userRepository.GetUserByToken(token);
-        var userId = user.Id;
+        string sqlFilter = "WHERE CommunityId = @communityId";
+        var parameters = new { communityId, userId };
 
-        var connection = _context.Database.GetDbConnection();
-
-        var command = new CommandDefinition(
-            @"SELECT p.Id, p.DateCreated, p.CommunityId, p.Title, p.`Text`,
-                p.CreatorUserId, u.Username 'creatorUsername',
-                SUM(CASE WHEN v.VoteType = 0 THEN 1 ELSE 0 END) 'upvoteCount',
-                SUM(CASE WHEN v.VoteType = 1 THEN 1 ELSE 0 END) 'downvoteCount',
-                (SELECT VoteType FROM Votes v WHERE PostId = p.Id AND UserId = @userId) 'userVote'
-            FROM Posts p
-
-            JOIN Communities c ON c.Id = p.CommunityId
-            JOIN Users u ON u.Id = p.CreatorUserId
-            LEFT JOIN Votes v ON v.PostId = p.Id
-
-            WHERE CommunityId = @communityId
-
-            GROUP BY p.Id
-            ORDER BY p.DateCreated DESC
-            LIMIT 100",
-            new { communityId, userId }
-        );
-
-        return await connection.QueryAsync<PostFeedDTO>(command);
+        return await _postRepository.GetWithFilter(sqlFilter, parameters);
     }
 
     public async Task<IEnumerable<CommunityBasicDTO>> GetRecommended()
@@ -75,7 +61,7 @@ public class CommunityRepository : ICommunityRepository
         int toSkip = rand.Next(1, _context.Communities.Count());
 
         return await _context.Communities.Skip(toSkip)
-            .Select(c => new CommunityBasicDTO(c.Id, c.Name, c.Description, c.Users.Count(), null, null))
+            .Select(c => new CommunityBasicDTO(c.Id, c.Name, c.Description, c.Users.Count(), null, null, null))
             .Take(10)
             .ToListAsync();
     }

@@ -14,11 +14,9 @@ namespace ForyumAPI.Controllers;
 public class PostController : AppBaseController {
 
     private readonly IPostRepository _repository;
-    private readonly IUserRepository _userRepository;
 
-    public PostController(IPostRepository repository, IUserRepository userRepository) {
+    public PostController(IPostRepository repository, IUserRepository userRepository): base(userRepository) {
         _repository = repository;
-        _userRepository = userRepository;
     }
 
     [HttpPost]
@@ -29,9 +27,7 @@ public class PostController : AppBaseController {
 
     [HttpGet]
     public async Task<IEnumerable<PostFeedDTO>> GetFeed(PostOrdenation orderBy) {
-        var token = GetTokenFromHeader();
-        var user = await _userRepository.GetUserByToken(token);
-
-        return await _repository.GetFeed(user.Id, orderBy);
+        var userId = await GetUserIdFromToken();
+        return await _repository.GetFeed(userId, orderBy);
     }
 }
