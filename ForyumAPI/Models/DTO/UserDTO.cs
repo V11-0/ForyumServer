@@ -4,20 +4,25 @@ namespace ForyumAPI.Models.DTO;
 
 public class UserBasicDTO
 {
-    public UserBasicDTO(string username, string country, string? bio)
+    public UserBasicDTO(string username, string country, string? bio, IEnumerable<CommunityBasicDTO>? communities = null, IEnumerable<PostFeedDTO>? posts = null)
     {
         Username = username;
         Country = country;
         Bio = bio;
+        Communities = communities;
+        Posts = posts;
     }
 
     public string Username { get; set; } = null!;
     public string Country { get; set; } = null!;
     public string? Bio { get; set; }
 
-    public static UserBasicDTO fromUser(User user)
+    public IEnumerable<CommunityBasicDTO>? Communities { get; set; }
+    public IEnumerable<PostFeedDTO>? Posts { get; set; }
+
+    public static UserBasicDTO fromUser(User user, IEnumerable<CommunityBasicDTO>? communities = null, IEnumerable<PostFeedDTO>? posts = null)
     {
-        return new UserBasicDTO(user.Username, user.Country, user.Bio);
+        return new UserBasicDTO(user.Username, user.Country, user.Bio, communities, posts);
     }
 }
 
@@ -35,7 +40,7 @@ public class UserCreationDTO
             Username = userCreationDTO.Username,
             Email = userCreationDTO.Email,
             Password = userCreationDTO.Password,
-            Country = userCreationDTO.Country
+            Country = userCreationDTO.Country,
         };
 
         return user;

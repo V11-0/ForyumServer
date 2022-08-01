@@ -4,7 +4,6 @@ using ForyumAPI.Models.DTO;
 using ForyumAPI.Repositories.Base;
 using ForyumAPI.Security;
 using Infrastructure;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 
 namespace ForyumAPI.Repositories;
@@ -17,6 +16,7 @@ public interface IUserRepository : IRepository<User>
     Task<Session?> Login(UserLoginDTO userLogin, string userAgent);
     Task<User> GetUserByToken(string token);
     Task Logout(string token);
+    Task<UserBasicDTO?> GetUserDTO(int id);
 }
 
 public class UserRepository : IUserRepository
@@ -24,12 +24,14 @@ public class UserRepository : IUserRepository
     private readonly AppDbContext _context;
     private readonly IPasswordHelper _passwordHelper;
     private readonly IJWTHelper _jwtHelper;
+    private readonly IPostRepository _postRepository;
 
-    public UserRepository(AppDbContext context, IPasswordHelper passwordHelper, IJWTHelper jwtHelper)
+    public UserRepository(AppDbContext context, IPasswordHelper passwordHelper, IJWTHelper jwtHelper, IPostRepository postRepository)
     {
         _context = context;
         _passwordHelper = passwordHelper;
         _jwtHelper = jwtHelper;
+        _postRepository = postRepository;
     }
 
     public async Task<bool> CheckForEmail(string email)
@@ -57,6 +59,30 @@ public class UserRepository : IUserRepository
             .Include(s => s.User.Communities)
             .Select(s => s.User)
             .SingleAsync();
+    }
+
+    public async Task<UserBasicDTO?> GetUserDTO(int id)
+    {
+        var user = await _context.Users
+            .Where(u => u.Id == id)
+            .Include(u => u.Communities)
+            .ThenInclude(c => c.CreatorUser)
+            .Include(u => u.Communities)
+            .ThenInclude(c => c.Users)
+
+            .Select(u =>
+                UserBasicDTO.fromUser(u, u.Communities.Select(c => CommunityBasicDTO.fromCommunity(c)), null))
+            .SingleOrDefaultAsync();
+
+        if (user != null)
+        {
+            string sqlFilter = "WHERE p.CreatorUserId = @id";
+            user.Posts = await _postRepository.GetWithFilter(sqlFilter, new { id });
+
+            return user;
+        }
+
+        return null;
     }
 
     public async Task<User> Insert(User obj)

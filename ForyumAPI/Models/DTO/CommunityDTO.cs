@@ -1,3 +1,5 @@
+using ApplicationCore.Models;
+
 namespace ForyumAPI.Models.DTO;
 
 public class CommunityBasicDTO
@@ -19,5 +21,17 @@ public class CommunityBasicDTO
         this.creatorUserId = creatorUserId;
         this.creatorUsername = creatorUsername;
         this.posts = posts;
+    }
+
+    public static CommunityBasicDTO fromCommunity(Community community)
+    {
+        var users = 0;
+
+        if (community.Users != null)
+        {
+            users = community.Users.Count();
+        }
+
+        return new CommunityBasicDTO(community.Id, community.Name, community.Description, users, community.CreatorUserId, community.CreatorUser.Username);
     }
 }

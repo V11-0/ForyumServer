@@ -74,11 +74,11 @@ public class UserController : AppBaseController
     [Route("{id}")]
     public async Task<ActionResult<UserBasicDTO?>> GetUserById(int id)
     {
-        var user = await _userRepository.GetById(id);
+        var user = await _userRepository.GetUserDTO(id);
 
         if (user != null)
         {
-            return UserBasicDTO.fromUser(user);
+            return user;
         }
 
         return NotFound();
