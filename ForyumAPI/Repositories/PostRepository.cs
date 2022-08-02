@@ -11,7 +11,7 @@ namespace ForyumAPI.Repositories;
 public interface IPostRepository : IRepository<Post>
 {
     Task<IEnumerable<PostFeedDTO>> GetFeed(int userId, PostOrdenation orderBy);
-    Task<IEnumerable<PostFeedDTO>> GetWithFilter(string sqlFilter, object? parameters = null);
+    Task<IEnumerable<PostFeedDTO>> GetWithFilter(string sqlFilter, object? parameters = null, PostOrdenation orderBy = PostOrdenation.New);
 }
 
 public class PostRepository : IPostRepository
@@ -33,7 +33,7 @@ public class PostRepository : IPostRepository
         {0}
 
         GROUP BY p.Id
-        ORDER BY p.DateCreated DESC
+        ORDER BY {1} DESC
         LIMIT 100";
 
     public PostRepository(AppDbContext context)
@@ -50,7 +50,7 @@ public class PostRepository : IPostRepository
     public async Task<IEnumerable<PostFeedDTO>> GetFeed(int userId, PostOrdenation orderBy)
     {
         string filter = "WHERE CommunityId IN (SELECT CommunitiesId FROM CommunityUser WHERE UsersId = @userId)";
-        return await GetWithFilter(filter, new { userId });
+        return await GetWithFilter(filter, new { userId }, orderBy);
     }
 
     public async Task<Post> Insert(Post obj)
@@ -66,12 +66,19 @@ public class PostRepository : IPostRepository
         throw new NotImplementedException();
     }
 
-    public async Task<IEnumerable<PostFeedDTO>> GetWithFilter(string sqlFilter, object? parameters = null)
+    public async Task<IEnumerable<PostFeedDTO>> GetWithFilter(string sqlFilter, object? parameters = null, PostOrdenation orderBy = PostOrdenation.New)
     {
+        // Number to be used with ORDER BY in sql query
+        var orderBycolumnNum = 2;
+
+        if (orderBy == PostOrdenation.MostVoted) {
+            orderBycolumnNum = 9;
+        }
+
         var connection = _context.Database.GetDbConnection();
 
         var command = new CommandDefinition(
-            String.Format(_basicPostQuery, sqlFilter),
+            String.Format(_basicPostQuery, sqlFilter, orderBycolumnNum),
             parameters
         );
 

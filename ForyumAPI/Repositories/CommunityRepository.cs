@@ -52,7 +52,7 @@ public class CommunityRepository : ICommunityRepository
         string sqlFilter = "WHERE CommunityId = @communityId";
         var parameters = new { communityId, userId };
 
-        return await _postRepository.GetWithFilter(sqlFilter, parameters);
+        return await _postRepository.GetWithFilter(sqlFilter, parameters, orderBy);
     }
 
     public async Task<IEnumerable<CommunityBasicDTO>> GetRecommended()
