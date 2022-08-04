@@ -66,9 +66,17 @@ public class CommunityRepository : ICommunityRepository
             .ToListAsync();
     }
 
-    public Task<Community> Insert(Community obj)
+    public async Task<Community> Insert(Community obj)
     {
-        throw new NotImplementedException();
+        var user = await _context.Users.FindAsync(obj.CreatorUserId);
+        obj.Users = new List<User>() {
+            user!
+        };
+
+        await _context.Communities.AddAsync(obj);
+        await _context.SaveChangesAsync();
+
+        return obj;
     }
 
     public async Task JoinCommunity(string token, int communityId)

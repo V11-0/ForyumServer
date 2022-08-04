@@ -35,3 +35,18 @@ public class CommunityBasicDTO
         return new CommunityBasicDTO(community.Id, community.Name, community.Description, users, community.CreatorUserId, community.CreatorUser.Username);
     }
 }
+
+public class CommunityCreationDTO
+{
+    public string name { get; set; } = null!;
+    public string? description { get; set; }
+    public int creatorUserId { get; set; }
+
+    public Community toCommunity() {
+        return new Community() {
+            Name = name,
+            Description = description,
+            CreatorUserId = creatorUserId
+        };
+    }
+}

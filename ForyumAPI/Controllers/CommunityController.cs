@@ -35,4 +35,13 @@ public class CommunityController : AppBaseController
         var userId = await GetUserIdFromToken();
         return await _repository.GetCommunity(id, userId);
     }
+
+    [HttpPost]
+    public async Task<int> CreateCommunity(CommunityCreationDTO communityDto) {
+        var userId = await GetUserIdFromToken();
+        communityDto.creatorUserId = userId;
+
+        var community = await _repository.Insert(communityDto.toCommunity());
+        return community.Id;
+    }
 }
