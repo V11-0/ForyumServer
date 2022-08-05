@@ -77,10 +77,6 @@ public class AppDbContext : DbContext
             .HasColumnType("DATETIME")
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-        modelBuilder.Entity<Session>()
-            .HasOne(s => s.User)
-            .WithMany(u => u.Sessions);
-
         modelBuilder.Entity<Session>().Ignore(s => s.Token);
         // -------------------------------
 
@@ -96,6 +92,17 @@ public class AppDbContext : DbContext
             .Property(c => c.Name)
             .HasMaxLength(100);
         // ----------------------
+
+        modelBuilder.Entity<Comment>().ToTable("Comments");
+
+        modelBuilder.Entity<Comment>()
+            .Property(b => b.DateCreated)
+            .HasColumnType("DATETIME")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+        modelBuilder.Entity<Comment>()
+            .Property(c => c.Text)
+            .HasMaxLength(2000);
 
         // Relations Configuration ----------------------
         modelBuilder.Entity<User>()
@@ -117,6 +124,11 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<User>()
             .HasMany(u => u.Sessions)
             .WithOne(s => s.User);
+        // ------------------------
+
+        modelBuilder.Entity<Session>()
+            .HasOne(s => s.User)
+            .WithMany(u => u.Sessions);
         // ------------------------
 
         modelBuilder.Entity<Post>()
@@ -151,6 +163,18 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Community>()
             .HasIndex(c => c.Name)
             .IsUnique();
+        // ------------------------
+        modelBuilder.Entity<Comment>()
+            .HasOne(c => c.ParentComment)
+            .WithMany(p => p.SubComments);
+
+        modelBuilder.Entity<Comment>()
+            .HasOne(c => c.Post)
+            .WithMany(p => p.Comments);
+
+        modelBuilder.Entity<Comment>()
+            .HasOne(c => c.CreatorUser)
+            .WithMany(u => u.Comments);
     }
 
     public DbSet<User> Users => Set<User>();

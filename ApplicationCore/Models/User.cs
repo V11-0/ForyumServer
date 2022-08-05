@@ -23,4 +23,5 @@ public class User
     public List<Community>? CreatedCommunities { get; set; }
     public List<Vote>? Votes { get; set; }
     public List<Session>? Sessions { get; set; }
+    public List<Comment>? Comments { get; set; }
 }

@@ -19,4 +19,6 @@ public class Post
     public Community Community { get; set; } = null!;
 
     public List<Vote>? Votes { get; set; }
+
+    public List<Comment>? Comments { get; set; }
 }
