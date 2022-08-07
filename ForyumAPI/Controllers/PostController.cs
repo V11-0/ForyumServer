@@ -30,4 +30,16 @@ public class PostController : AppBaseController {
         var userId = await GetUserIdFromToken();
         return await _repository.GetFeed(userId, orderBy);
     }
+
+    [HttpPost]
+    [Route("Comment")]
+    public async Task CreateComment(CommentCreationDTO comment) {
+        await _repository.CreateComment(comment.toComment());
+    }
+
+    [HttpGet]
+    [Route("{postId}/Comment")]
+    public async Task<IEnumerable<CommentDTO>> GetComments(int postId) {
+        return await _repository.GetComments(postId);
+    }
 }

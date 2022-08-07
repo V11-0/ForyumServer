@@ -182,4 +182,5 @@ public class AppDbContext : DbContext
     public DbSet<Community> Communities => Set<Community>();
     public DbSet<Post> Posts => Set<Post>();
     public DbSet<Vote> Votes => Set<Vote>();
+    public DbSet<Comment> Comments => Set<Comment>();
 }

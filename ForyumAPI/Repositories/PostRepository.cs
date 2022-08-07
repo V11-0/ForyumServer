@@ -12,6 +12,8 @@ public interface IPostRepository : IRepository<Post>
 {
     Task<IEnumerable<PostFeedDTO>> GetFeed(int userId, PostOrdenation orderBy);
     Task<IEnumerable<PostFeedDTO>> GetWithFilter(string sqlFilter, object? parameters = null, PostOrdenation orderBy = PostOrdenation.New);
+    Task CreateComment(Comment comment);
+    Task<IEnumerable<CommentDTO>> GetComments(int postId);
 }
 
 public class PostRepository : IPostRepository
@@ -83,5 +85,21 @@ public class PostRepository : IPostRepository
         );
 
         return await connection.QueryAsync<PostFeedDTO>(command);
+    }
+
+    public async Task CreateComment(Comment comment)
+    {
+        await _context.Comments.AddAsync(comment);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<IEnumerable<CommentDTO>> GetComments(int postId)
+    {
+        return await _context.Comments
+            .Where(c => c.PostId == postId && c.ParentCommentId == null)
+            .Include(c => c.CreatorUser)
+            .Include(c => c.SubComments)
+            .Select(c => CommentDTO.fromComment(c))
+            .ToListAsync();
     }
 }
