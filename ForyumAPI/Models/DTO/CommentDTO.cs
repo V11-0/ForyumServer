@@ -20,6 +20,8 @@ public class CommentCreationDTO {
 }
 
 public class CommentDTO {
+    public int Id { get; set; }
+    public DateTimeOffset DateCreated { get; set; }
     public string Text { get; set; } = null!;
     public int CreatorUserId { get; set; }
     public string CreatorUsername { get; set; } = null!;
@@ -27,6 +29,8 @@ public class CommentDTO {
 
     public static CommentDTO fromComment(Comment c) {
         return new CommentDTO() {
+            Id = c.Id,
+            DateCreated = c.DateCreated,
             Text = c.Text,
             CreatorUserId = c.CreatorUserId,
             CreatorUsername = c.CreatorUser.Username,
