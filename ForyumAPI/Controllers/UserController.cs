@@ -89,4 +89,10 @@ public class UserController : AppBaseController
         string token = GetTokenFromHeader();
         return await _userRepository.GetUserByToken(token);
     }
+
+    [HttpPut]
+    public async Task UpdateBio(UserUpdateDTO data) {
+        var user = await GetCurrentUser();
+        await _userRepository.UpdateBio(data.bio, user);
+    }
 }

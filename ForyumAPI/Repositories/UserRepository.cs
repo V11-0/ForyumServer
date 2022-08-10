@@ -17,6 +17,7 @@ public interface IUserRepository : IRepository<User>
     Task<User> GetUserByToken(string token);
     Task Logout(string token);
     Task<UserBasicDTO?> GetUserDTO(int id);
+    Task UpdateBio(string bio, User user);
 }
 
 public class UserRepository : IUserRepository
@@ -160,5 +161,13 @@ public class UserRepository : IUserRepository
         {
             throw new ApplicationException("User to be updated does not exist");
         }
+    }
+
+    public async Task UpdateBio(string bio, User user)
+    {
+        user.Bio = bio;
+
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync();
     }
 }

@@ -52,3 +52,8 @@ public class UserLoginDTO
     public string Username { get; set; } = null!;
     public string Password { get; set; } = null!;
 }
+
+public class UserUpdateDTO
+{
+    public string bio { get; set; } = null!;
+}
