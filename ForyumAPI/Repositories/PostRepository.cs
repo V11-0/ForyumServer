@@ -48,7 +48,6 @@ public class PostRepository : IPostRepository
         throw new NotImplementedException();
     }
 
-    // TODO: Implement orderBy
     public async Task<IEnumerable<PostFeedDTO>> GetFeed(int userId, PostOrdenation orderBy)
     {
         string filter = "WHERE CommunityId IN (SELECT CommunitiesId FROM CommunityUser WHERE UsersId = @userId)";

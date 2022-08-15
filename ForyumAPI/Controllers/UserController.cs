@@ -22,7 +22,8 @@ public class UserController : AppBaseController
     [AllowAnonymous]
     public async Task<ActionResult<Session>> Login(UserLoginDTO userLogin)
     {
-        var userAgent = Request.Headers.UserAgent.ToString();
+        string? userAgent = Request?.Headers?.UserAgent;
+
         var session = await _userRepository.Login(userLogin, userAgent);
 
         if (session == null) {

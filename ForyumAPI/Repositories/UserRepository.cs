@@ -13,7 +13,7 @@ public interface IUserRepository : IRepository<User>
 
     Task<bool> CheckForUsername(string username);
     Task<bool> CheckForEmail(string email);
-    Task<Session?> Login(UserLoginDTO userLogin, string userAgent);
+    Task<Session?> Login(UserLoginDTO userLogin, string? userAgent);
     Task<User> GetUserByToken(string token);
     Task Logout(string token);
     Task<UserBasicDTO?> GetUserDTO(int id);
@@ -96,7 +96,7 @@ public class UserRepository : IUserRepository
         return obj;
     }
 
-    public async Task<Session?> Login(UserLoginDTO userLogin, string userAgent)
+    public async Task<Session?> Login(UserLoginDTO userLogin, string? userAgent)
     {
         var passwordSalt = await _context.Users
             .Where(u => u.Username == userLogin.Username)
