@@ -11,7 +11,7 @@ namespace ForyumAPI.Tests.Controllers;
 public class UserControllerTests
 {
     [TestMethod]
-    public async Task CreateUser_Valid_User()
+    public async Task CreateUser_Valid_ReturnsUser()
     {
         var repoMock = new Mock<IUserRepository>();
         repoMock.Setup(repo => repo.CheckForUsername(It.IsAny<string>()).Result)
@@ -47,7 +47,7 @@ public class UserControllerTests
     }
 
     [TestMethod]
-    public async Task CreateUser_EmailExists_Conflict()
+    public async Task CreateUser_EmailExists_ReturnsConflict()
     {
         var repoMock = new Mock<IUserRepository>();
         repoMock.Setup(repo => repo.CheckForUsername(It.IsAny<string>()).Result)
@@ -64,7 +64,7 @@ public class UserControllerTests
     }
 
     [TestMethod]
-    public async Task CreateUser_UsernameAndEmailExists_Conflict()
+    public async Task CreateUser_UsernameAndEmailExists_ReturnsConflict()
     {
         var repoMock = new Mock<IUserRepository>();
         repoMock.Setup(repo => repo.CheckForUsername(It.IsAny<string>()).Result)
@@ -81,7 +81,7 @@ public class UserControllerTests
     }
 
     [TestMethod]
-    public async Task Login_Valid_Session()
+    public async Task Login_ValidUser_ReturnsSession()
     {
         var repoMock = new Mock<IUserRepository>();
         repoMock
@@ -97,7 +97,7 @@ public class UserControllerTests
     }
 
     [TestMethod]
-    public async Task Login_Invalid_Unauthorized()
+    public async Task Login_InvalidUser_ReturnsUnauthorized()
     {
         var repoMock = new Mock<IUserRepository>();
 
@@ -107,5 +107,33 @@ public class UserControllerTests
         var result = (await controller.Login(userLogin)).Result;
 
         Assert.IsInstanceOfType(result, typeof(UnauthorizedResult));
+    }
+
+    [TestMethod]
+    public async Task GetUserById_ValidId_ReturnsUser() {
+        var repoMock = new Mock<IUserRepository>();
+
+        repoMock.Setup(
+            repo => repo.GetUserDTO(It.IsAny<int>()).Result)
+            .Returns(new UserBasicDTO("username", "Brazil", ""));
+
+        var controller = new UserController(repoMock.Object);
+        var id = 1;
+
+        var result = await controller.GetUserById(id);
+
+        Assert.IsInstanceOfType(result, typeof(ActionResult<UserBasicDTO>));
+    }
+
+    [TestMethod]
+    public async Task GetUserById_InvalidId_ReturnsNotFound() {
+        var repoMock = new Mock<IUserRepository>();
+
+        var controller = new UserController(repoMock.Object);
+        var id = 1;
+
+        var result = (await controller.GetUserById(id)).Result;
+
+        Assert.IsInstanceOfType(result, typeof(NotFoundResult));
     }
 }
